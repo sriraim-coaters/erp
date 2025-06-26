@@ -19,11 +19,12 @@ export interface AttendanceRecord {
   department: 'CNC' | 'Plating';
   date: string;
   shift: 'Morning' | 'Evening';
-  checkIn?: string;
-  checkOut?: string;
-  status: 'Present' | 'Absent' | 'Late';
+  checkIn?: string; // Maps to Time In
+  checkOut?: string; // Maps to Time Out
+  status: 'Present' | 'Absent' | 'Late' | 'On Leave';
   otHours: number;
-  otAmount: number;
+  otRate: number; // Store the OT rate used for this specific record
+  otAmount: number; // Stores calculated OT Pay (otHours * otRate)
 }
 
 export interface Machine {

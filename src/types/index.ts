@@ -45,10 +45,9 @@ export interface MaintenanceLog {
   date: string;
   shift: 'Morning' | 'Evening';
   technician: string;
-  type: 'Routine' | 'Repair' | 'Inspection'; // Type of maintenance task
-  description: string; // Description of issue or preventive maintenance done
-  taskStatus: 'Completed' | 'In Progress' | 'Pending'; // Status of the maintenance task itself
-  machineStatusAfter: 'Working' | 'Needs Attention' | 'Broken'; // Machine's status after this maintenance
+  type: 'Routine' | 'Repair' | 'Inspection';
+  description: string;
+  status: 'Completed' | 'In Progress' | 'Pending';
 }
 
 export interface Purchase {

@@ -36,18 +36,31 @@ export interface Machine {
   nextMaintenance: string;
   assignedTechnician: string;
   location: string;
-  maintenanceLogs: MaintenanceLog[];
+  // maintenanceLogs: MaintenanceLog[]; // Removed: Logs will be fetched separately
 }
 
 export interface MaintenanceLog {
-  id: string;
-  machineId: string;
-  date: string;
+  id: number; // Was string, backend sends int
+  machine_name: string; // Was machineId, align with backend
+  department: string; // New field from backend
+  date_of_maintenance: string; // Was date, ISO Date string, align with backend
   shift: 'Morning' | 'Evening';
-  technician: string;
-  type: 'Routine' | 'Repair' | 'Inspection';
+  technician_name: string; // Was technician, align with backend
   description: string;
-  status: 'Completed' | 'In Progress' | 'Pending';
+  // type: 'Routine' | 'Repair' | 'Inspection'; // Field removed, covered by description. Requirement was "Description of issue or preventive maintenance done"
+  machine_status_after: 'Working' | 'Needs Attention' | 'Broken'; // Was status, align with backend & requirement
+  created_at?: string; // ISO DateTime string from backend
+  updated_at?: string; // ISO DateTime string from backend
+}
+
+// New Type for Payments related to ScrapSale
+export interface Payment {
+  id: number;
+  scrap_sale_id: number;
+  date_of_payment: string; // ISO Date string
+  amount_paid: number;
+  created_at?: string; // ISO DateTime string
+  updated_at?: string; // ISO DateTime string
 }
 
 export interface Purchase {
@@ -80,11 +93,14 @@ export interface Job {
 }
 
 export interface ScrapSale {
-  id: string;
-  date: string;
-  kgSold: number;
-  rate: number; // ₹ per kg
-  amountReceived: number;
-  amountPending: number;
-  totalAmount: number;
+  id: number; // Was string, backend sends int
+  date_of_sale: string; // Was date, ISO Date string, align with backend
+  material_kg: number; // Was kgSold, align with backend
+  rate_per_kg: number; // Was rate, ₹ per kg, align with backend
+  total_value: number; // Was totalAmount, align with backend
+  amount_received: number;
+  amount_pending: number;
+  payments: Payment[]; // Added payment history
+  created_at?: string; // ISO DateTime string from backend
+  updated_at?: string; // ISO DateTime string from backend
 }

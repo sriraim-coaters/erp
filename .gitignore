@@ -1,25 +1,27 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.DS_Store
+backend/instance/  # Ignore the instance folder where SQLite DB and other instance data might be
+backend/migrations/ # Migrations are code, but some prefer to generate them in CI/CD
+                    # For now, keeping them versioned is fine as they define schema evolution.
+                    # If project.db was outside instance/, then backend/*.db or backend/project.db
 
-node_modules
-dist
-dist-ssr
-*.local
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.DS_Store
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/coverage/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# IDE / OS specific
+.vscode/
+.idea/
+*.swp
+*~
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.env

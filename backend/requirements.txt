@@ -1,0 +1,7 @@
+Flask>=2.0
+Flask-SQLAlchemy>=2.5
+Flask-CORS>=3.0
+SQLAlchemy>=1.4  # Ensure compatibility, though Flask-SQLAlchemy might manage this
+python-dotenv>=0.19
+Werkzeug>=2.0 # Explicitly adding for Flask compatibility if needed for newer Python versions
+Flask-Migrate>=3.0 # For handling database schema migrations (good practice)

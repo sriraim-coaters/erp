@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
-import { Settings, AlertTriangle, CheckCircle, Wrench, Plus, Filter } from 'lucide-react';
-import { Machine, MaintenanceLog } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Settings, AlertTriangle, CheckCircle, Wrench, Plus, Filter, Loader2 } from 'lucide-react';
+import { Machine, MaintenanceLog } from '../../types'; // MaintenanceLog type is used by onSaveSuccess
 import MaintenanceModal from './MaintenanceModal';
+// import { fetchMaintenanceLogs } from '../../services/maintenanceService'; // Example if we were to fetch logs
 
-const mockMachines: Machine[] = [
+// Mock machine data (without maintenanceLogs array as it's fetched separately)
+// The machine list itself is not part of backend work in this scope, so keeping it mock.
+const initialMockMachines: Machine[] = [
   {
-    id: 'CNC-001',
+    id: 'CNC-001', // This ID might be used as machine_name in logs if it's unique like a name
     name: 'CNC Milling Machine 1',
-    type: 'CNC',
-    status: 'Healthy',
-    lastMaintenance: '2024-01-10',
-    nextMaintenance: '2024-02-10',
-    assignedTechnician: 'John Smith',
+    type: 'CNC', // This corresponds to 'department' in MaintenanceLog
+    status: 'Healthy', // This will be updated by new logs
+    lastMaintenance: '2024-01-10', // This will be updated by new logs
+    nextMaintenance: '2024-02-10', // Not directly affected by new logs in this scope
+    assignedTechnician: 'John Smith', // Default technician
     location: 'Floor A - Station 1',
-    maintenanceLogs: []
   },
   {
     id: 'CNC-002',
@@ -24,7 +26,6 @@ const mockMachines: Machine[] = [
     nextMaintenance: '2024-01-15',
     assignedTechnician: 'Sarah Johnson',
     location: 'Floor A - Station 2',
-    maintenanceLogs: []
   },
   {
     id: 'PLT-001',
@@ -35,7 +36,6 @@ const mockMachines: Machine[] = [
     nextMaintenance: '2024-02-14',
     assignedTechnician: 'Mike Wilson',
     location: 'Floor B - Bay 1',
-    maintenanceLogs: []
   },
   {
     id: 'PLT-002',
@@ -46,16 +46,35 @@ const mockMachines: Machine[] = [
     nextMaintenance: '2024-02-08',
     assignedTechnician: 'Lisa Chen',
     location: 'Floor B - Bay 2',
-    maintenanceLogs: []
   }
 ];
 
 export default function MachineManagement() {
-  const [machines, setMachines] = useState<Machine[]>(mockMachines);
+  const [machines, setMachines] = useState<Machine[]>(initialMockMachines);
+  // const [allMaintenanceLogs, setAllMaintenanceLogs] = useState<MaintenanceLog[]>([]); // If we were to display all logs
+  // const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+  // const [logsError, setLogsError] = useState<string | null>(null);
+
   const [selectedType, setSelectedType] = useState<'All' | 'CNC' | 'Plating'>('All');
   const [selectedStatus, setSelectedStatus] = useState<'All' | 'Healthy' | 'Needs Service' | 'Under Maintenance'>('All');
   const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
+
+  // useEffect(() => { // Example: Fetching all logs on mount - not doing this now to keep scope focused
+  //   const loadLogs = async () => {
+  //     setIsLoadingLogs(true);
+  //     setLogsError(null);
+  //     try {
+  //       const logs = await fetchMaintenanceLogs();
+  //       setAllMaintenanceLogs(logs);
+  //     } catch (err) {
+  //       setLogsError(err instanceof Error ? err.message : 'Failed to fetch logs');
+  //     } finally {
+  //       setIsLoadingLogs(false);
+  //     }
+  //   };
+  //   loadLogs();
+  // }, []);
 
   const filteredMachines = machines.filter(machine => {
     const matchesType = selectedType === 'All' || machine.type === selectedType;
@@ -102,18 +121,33 @@ export default function MachineManagement() {
     setIsMaintenanceModalOpen(true);
   };
 
-  const handleSaveMaintenance = (log: MaintenanceLog) => {
-    setMachines(machines.map(machine => 
-      machine.id === log.machineId 
-        ? { 
-            ...machine, 
-            maintenanceLogs: [...machine.maintenanceLogs, log],
-            lastMaintenance: log.date,
-            status: log.status === 'Completed' ? 'Healthy' : 'Under Maintenance'
-          }
-        : machine
-    ));
-    setIsMaintenanceModalOpen(false);
+  const handleSaveMaintenanceSuccess = (newLog: MaintenanceLog) => {
+    // Update the specific machine's status and last maintenance date
+    setMachines(prevMachines =>
+      prevMachines.map(m => {
+        // The log contains machine_name. We need to find the machine by its name.
+        // Assuming machine.name is unique and used as machine_name in the log.
+        // Or, if machine.id was used as machine_name, then m.id === newLog.machine_name
+        if (m.name === newLog.machine_name) {
+          return {
+            ...m,
+            lastMaintenance: newLog.date_of_maintenance,
+            // Determine new status. 'Working' maps to 'Healthy'.
+            // 'Needs Attention' or 'Broken' could map to 'Needs Service' or 'Under Maintenance'.
+            // This mapping might need refinement based on exact operational meaning.
+            status: newLog.machine_status_after === 'Working' ? 'Healthy'
+                  : newLog.machine_status_after === 'Needs Attention' ? 'Needs Service'
+                  : 'Under Maintenance', // Default for 'Broken' or other states
+          };
+        }
+        return m;
+      })
+    );
+
+    // Optionally, add to a global list of logs if displaying them elsewhere
+    // setAllMaintenanceLogs(prevLogs => [newLog, ...prevLogs]);
+
+    setIsMaintenanceModalOpen(false); // Modal closes itself on success, but good to ensure state consistency
     setSelectedMachine(null);
   };
 
@@ -302,7 +336,7 @@ export default function MachineManagement() {
           setSelectedMachine(null);
         }}
         machine={selectedMachine}
-        onSave={handleSaveMaintenance}
+        onSaveSuccess={handleSaveMaintenanceSuccess}
       />
     </div>
   );
